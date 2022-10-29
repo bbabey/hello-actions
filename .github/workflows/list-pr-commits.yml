@@ -11,4 +11,4 @@ jobs:
     steps:
       - name: Dump GitHub Pull Request Context
         id: github_context_step
-        run: echo '${{ toJSON(github.event.pullrequest) }}'
+        run: echo '${{ toJSON(github.event.pull_request) }}'
