@@ -23,7 +23,7 @@ jobs:
             })
             if (prCommentExists) {
               console.log('An existing automatic PR comment was found; no work necessary.')
-              return;
+              // return;
             }
 
             // grab all the commits in this pull request
