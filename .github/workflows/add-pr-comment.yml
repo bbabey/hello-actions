@@ -11,19 +11,29 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const { data } = await github.rest.issues.listComments({
+            const { data: commentList } = await github.rest.issues.listComments({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo
             })
 
             // check existing comments to avoid duplicate
-            const prCommentExists = data.some(c => {
+            const prCommentExists = commentList.some(c => {
               return c.body.includes('AddPRComment')
             })
             if (prCommentExists) {
+              console.log('An existing automatic PR comment was found; no work necessary.')
               return;
             }
+
+            // grab all the commits in this pull request
+            const { data: prCommits } = await github.rest.pulls.listCommits({
+              pull_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            })
+            const commitMessages = prCommits.map(c => c.commit.message)
+            console.log(commitMessages);
 
             // create new comment
             github.rest.issues.createComment({
