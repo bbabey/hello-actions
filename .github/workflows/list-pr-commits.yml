@@ -1,8 +1,10 @@
 name: List PR Commits
+
 on:
   pull_request:
     branches:
       - main
+
 jobs:
   list-pr-commits:
     runs-on: ubuntu-latest
