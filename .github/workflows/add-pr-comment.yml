@@ -4,16 +4,59 @@ on:
     branches:
       - main
 jobs:
-  comment:
+  add_pr_comment:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v6
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
+            const { data: commentList } = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            })
+
+            // check existing comments to avoid duplicate
+            const prCommentExists = commentList.some(c => {
+              return c.body.includes('AddPRComment')
+            })
+            if (prCommentExists) {
+              console.log('An existing automatic PR comment was found; no work necessary.')
+              return;
+            }
+
+            // grab all the commits in this pull request
+            const { data: prCommits } = await github.rest.pulls.listCommits({
+              pull_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            })
+            const commitMessages = prCommits.map(c => c.commit.message)
+
+            // locate all the issue mentions in this PR's commits
+            const commitMessageChain = commitMessages.join('; ').toUpperCase();
+            const issueRegex = /([A-Z]+-[0-9]+)/g;
+            const issueMentions = commitMessageChain.match(issueRegex);
+            if (!issueMentions) {
+              console.log('No issue mentions were found in PR commits; no work necessary.');
+              return;
+            }
+            
+            // get unique list of issues to generate our comment
+            const uniqueIssues = [...new Set(issueMentions)];
+            const uniqueIssueMarkdownLinks = uniqueIssues.map(i => {
+              const issueLink = `http://google.com/searc?q=${i}`;
+              return `[${i}](${issueLink})`;
+            });
+            const linksMarkdown = uniqueIssueMarkdownLinks.join(', ');
+            const commentMarkdown = `AddPRComment found links to issue(s): ${linksMarkdown}`;
+            console.log(`{uniqueIssues.length} issues mentioned in commits; adding a PR commment.`);
+
+            // create new comment
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'AddPRComment attached a comment to the pull request.'
+              body: commentMarkdown,
             })
