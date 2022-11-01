@@ -49,8 +49,8 @@ jobs:
               const issueLink = `http://google.com/searc?q=${i}`;
               return `[${i}](${issueLink})`;
             });
-            const linkListMarkdown = uniqueIssueMarkdownLinks.join(', ');
-            const commentMarkdown = `AddPRComment found links to issue(s): ${linkListMarkdown}`;
+            const linksMarkdown = uniqueIssueMarkdownLinks.join(', ');
+            const commentMarkdown = `AddPRComment found links to issue(s): ${linksMarkdown}`;
 
             // create new comment
             github.rest.issues.createComment({
