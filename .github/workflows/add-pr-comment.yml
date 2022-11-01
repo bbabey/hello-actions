@@ -51,6 +51,7 @@ jobs:
             });
             const linksMarkdown = uniqueIssueMarkdownLinks.join(', ');
             const commentMarkdown = `AddPRComment found links to issue(s): ${linksMarkdown}`;
+            console.log(`{uniqueIssues.length} issues mentioned in commits; adding a PR commment.`);
 
             // create new comment
             github.rest.issues.createComment({
